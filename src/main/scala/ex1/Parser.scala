@@ -33,6 +33,9 @@ object Parsers:
   def nonEmptyNotTwoConsecutive(chars: Set[Char]): Parser[Char] =
     new BasicParser(chars) with NotTwoConsecutive[Char] with NonEmpty[Char]
 
+  def ShortenThenN(chars: Set[Char]): Parser[Char] =
+    new BasicParser(chars) with ShortenThenN[Char] with NonEmpty[Char]
+
 
 class BasicParser(chars: Set[Char]) extends Parser[Char]:
   override def parse(t: Char): Boolean = chars.contains(t)
@@ -66,6 +69,16 @@ trait NotTwoConsecutive[T] extends Parser[T]:
 
 class NotTwoConsecutiveParser(chars: Set[Char])
   extends BasicParser(chars) with NotTwoConsecutive[Char]
+
+trait ShortenThenN[T] extends Parser[T]:
+  private[this] val size = 5
+  private[this] var actualLength = 0
+
+  abstract override def parse(t: T): Boolean =
+    actualLength += 1
+    super.parse(t)
+
+  abstract override def end: Boolean = actualLength >= size && super.end
 
 @main def checkParsers(): Unit =
   def parser = new BasicParser(Set('a', 'b', 'c'))

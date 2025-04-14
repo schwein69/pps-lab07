@@ -6,13 +6,21 @@ import org.junit.Test
 
 class ParserTests:
   def parser = new BasicParser(Set('a', 'b', 'c'))
+
   // Note NonEmpty being "stacked" on to a concrete class
   // Bottom-up decorations: NonEmptyParser -> NonEmpty -> BasicParser -> Parser
   def parserNE = new NonEmptyParser(Set('0', '1'))
+
   def parserNTC = new NotTwoConsecutiveParser(Set('X', 'Y', 'Z'))
+
   // note we do not need a class name here, we use the structural type
   def parserNTCNE = new BasicParser(Set('X', 'Y', 'Z')) with NotTwoConsecutive[Char] with NonEmpty[Char]
-  def sparser: Parser[Char] = ??? // "abc".charParser()
+
+  import Parsers.*
+
+  def sparser: Parser[Char] = "abc".charParser()
+
+  def sparser2: Parser[Char] = ShortenThenN(Set('a', 'b', 'c', 'd', 'e'))
 
   @Test
   def testBasicParser =
@@ -43,3 +51,9 @@ class ParserTests:
     assertTrue(sparser.parseAll("aabc".toList))
     assertFalse(sparser.parseAll("aabcdc".toList))
     assertTrue(sparser.parseAll("".toList))
+
+  @Test
+  def testShortenThenN =
+    assertFalse(sparser2.parseAll("aac".toList))
+    assertTrue(sparser2.parseAll("abcde".toList))
+    assertFalse(sparser2.parseAll("".toList))
